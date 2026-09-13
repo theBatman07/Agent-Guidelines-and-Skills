@@ -6,6 +6,10 @@
 
 ---
 
+## Project Context
+
+{ADD-YOUR-PROJECT-CONTEXT}
+
 ## 1. Code Clarity & Comments
 
 - **Do not over-comment.** Add comments only when the code is genuinely not self-explanatory — a non-obvious algorithm, a workaround for a known bug, a business rule that can't be expressed in code.
@@ -86,7 +90,18 @@ def assign_voice_profile(
 - If you copy-paste a block and change one value, it should probably be a parameterized function.
 - But don't over-abstract prematurely — wait until you see the second or third use before extracting. Two is suspicious; three is a pattern.
 
-## 6. KISS — Keep It Simple
+## 6. KISS & Minimal Code (Ponytail Ladder)
+
+Before writing new logic, every AI agent MUST evaluate the task against this strict prioritization ladder:
+1. **Does this need to exist?** → No: skip it (YAGNI)
+2. **Already in this codebase?** → Reuse it, don't rewrite
+3. **Stdlib does it?** → Use it
+4. **Native platform feature?** → Use it
+5. **Installed dependency?** → Use it
+6. **Can it be a clear one-liner?** → One line
+7. **Only then:** Write the absolute minimum that works.
+
+**Safety Boundary:** Write only what the task needs, but NEVER cut validation, error handling, security, or accessibility in the name of reducing code size.
 
 - Prefer the straightforward solution that a new team member can read in one pass.
 - Avoid clever one-liners that sacrifice readability for brevity.
@@ -170,8 +185,45 @@ Before submitting code, every AI agent should verify:
 - [ ] All function signatures are fully typed
 - [ ] Public functions have docstrings (Description → Args → Returns → Raises)
 - [ ] No duplicated logic — DRY is satisfied
-- [ ] Implementation is the simplest correct solution — KISS is satisfied
+- [ ] Implementation follows the prioritization ladder — KISS is satisfied
 - [ ] Functions are small, single-purpose, and use guard clauses
 - [ ] No magic numbers or hardcoded config values
 - [ ] Errors are handled explicitly with domain exceptions
 - [ ] Tests exist for new and changed behavior
+
+---
+
+## 11. Universal Agent Behavior
+
+- Read before writing. Open relevant files before modifying them.
+- Don't change what you weren't asked to change. If you notice an unrelated issue, mention it — don't fix it silently.
+- Run the linter after edits when a linter config exists.
+- When uncertain between two approaches, state both with tradeoffs and ask — don't guess.
+
+## 12. AI Configuration & Skills Structure (`.agents/`)
+
+This project implements a clean separation between **Rules** and **Skills** to manage AI agents globally across all IDEs and CLI tools:
+
+- **`AGENTS.md`** (repo root): Always-on coding conventions — primary entry point for any tool.
+- **`.agents/rules/`**: Declarative, structural boundaries mapped to specific directories. AI agents should interpret the YAML frontmatter and respect these boundaries when modifying files in those paths (e.g., `api-layer.md` applies to `api/**/*.py`).
+- **`.agents/skills/`**: Procedural, actionable workflows stored as `SKILL.md` files. Run these when you ask for a specific skill (e.g., perform a code review).
+
+### Operational Skills
+
+| Skill | Folder | Use when... |
+|---|---|---|
+| Generate TA | `generate-ta` | **Always run before implementing complex features/bugs.** |
+| Code Review | `code-review` | Reviewing a diff or PR against AGENTS.md standards |
+| Docstring Generator | `docstring-generator` | Writing or fixing docstrings to match formatting |
+| Type Audit | `type-audit` | Auditing a file/module for type-safety gaps |
+| Prompt Engineering | `prompt-engineering` | Building prompts, tool descriptions, or RAG context |
+| Clean Code Refactor | `clean-code-refactor` | Restructuring code for readability and maintainability |
+| AI Development | `ai-development` | Guide for architecture, tool design, evaluation of AI agents |
+
+### Principal-Level Review Skills
+
+| Skill | Folder | Use when... |
+|---|---|---|
+| Principal Engineer | `principal-engineer` | Code review: correctness, reliability, security, observability |
+| Principal Architect | `principal-architect` | Design review: boundaries, data flow, scalability, contracts |
+| Principal DevOps | `principal-devops`| Infra review: Docker, CI/CD, monitoring, deployment, security |
