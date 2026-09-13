@@ -68,38 +68,35 @@ modules, services, data flow, and deployment topology.
 
 ---
 
-## Review Process
+## Exploration & Review Process
 
 When asked to review architecture or design decisions:
 
-1. **Draw the boundary map.** Which modules/services exist, what each owns, how they communicate.
-2. **Trace the data flow.** Follow a request from the API entry point to storage and back.
-   Where does it cross boundaries? Are the contracts explicit?
-3. **Stress the failure paths.** What happens when each external dependency is down? When a
-   task fails mid-pipeline? When the database is slow?
-4. **Check for coupling.** Could you deploy, test, or replace one module without touching
-   others? If not, the boundary is in the wrong place.
-5. **Project forward.** What happens when there are 10x users, 100x books, 3 new voice
-   providers? Does the current structure accommodate that, or does it require a redesign?
+1. **Scope the Hotspots (YAGNI):** If the user doesn't name a specific subsytem to review, explore organically. Walk back commit history (`git log --oneline`) to find the codebase's hot spots. Lean towards architectural deepening where the code is changing often.
+2. **Assess Depth and Friction:** Identify where understanding one concept requires bouncing between many small modules. Find **shallow** modules (where the interface is nearly as complex as the implementation). Apply the **deletion test**: would deleting a wrapper concentrate complexity, or just move it? Look for tightly-coupled modules leaking across seams.
+3. **Draw the boundary map & Trace data flow.** Which modules/services exist, what each owns, how they communicate. Follow a request from the API entry point to storage and back. Where does it cross boundaries? Are the contracts explicit?
+4. **Stress the failure paths.** What happens when each external dependency is down? When a task fails mid-pipeline?
+5. **Project forward.** What happens at 10x scale? Does current structure accommodate it without rewrite?
 
-## Output Format
+## Output Format: Visual HTML Report
 
-For each architectural concern:
+Instead of raw markdown snippets, present architectural "deepening opportunities" as a visually rich HTML report. 
 
-```
-[SCOPE] Component / Boundary
-Current state: What exists now.
-Risk: What problem this creates, and when it surfaces.
-Recommendation: Concrete next step (not "refactor this").
-Effort: S / M / L — relative sizing for prioritization.
-```
+Write a self-contained HTML file to the OS temp directory (resolve via `$TMPDIR`, falling back to `/tmp` or `%TEMP%`) named `architecture-review-<timestamp>.html`. Open it for the user (`xdg-open <path>`, `open <path>`, or `start <path>`) and tell them the absolute path in the terminal.
 
-**Scope levels:**
-- `[STRUCTURAL]` — wrong boundaries, circular dependencies, missing abstraction layer
-- `[DATA]` — schema issues, missing indexes, inconsistent storage patterns
-- `[RESILIENCE]` — missing failure handling, no retry/timeout, single point of failure
-- `[SCALABILITY]` — bottleneck that breaks at modest growth
-- `[CONTRACT]` — missing or inconsistent API/schema definitions
+See [HTML-REPORT.md](HTML-REPORT.md) for the Tailwind and Mermaid layout, structural patterns, and styling guidance. 
+
+For each issue or candidate, render a card featuring:
+- **Files**: which files/modules are involved.
+- **Problem**: why the current architecture causes systemic friction.
+- **Solution**: plain English description of what changes structurally (e.g. "Collapse the order intake pipeline").
+- **Benefits**: explained critically in terms of *locality*, *leverage*, and *how tests improve*.
+- **Before / After diagram**: visual centerpiece showing the shallowness and the deepening using Mermaid (for flow/dependencies) or inline custom SVGs/divs (for layered depth/cross-sections).
+- **Recommendation strength**: `Strong`, `Worth exploring`, `Speculative`.
+
+End the report with a **Top Recommendation**.
+
+*Use structural vocabulary exactly:* module, interface, depth, seam, adapter, leverage, locality. Do not default to generic words like "component" or "layer" if "module" applies. Use terms strictly consistent with the project's glossary (`CONTEXT.md`). Do not invent names for concepts.
 
 ---
 
@@ -107,6 +104,8 @@ Effort: S / M / L — relative sizing for prioritization.
 
 - **Boundaries are the architecture.** Everything else is implementation detail.
 - **Make the wrong thing hard.** If the structure encourages misuse, the structure is wrong.
+- **The interface is the test surface.** A deep module requires fewer tests touching internals.
+- **One adapter = hypothetical seam, two = real.**
 - **Contracts over conventions.** A typed schema is worth a hundred naming conventions.
 - **Design for replacement.** Every component will eventually be rewritten or swapped.
   Isolate it so that's a Tuesday, not a quarter.
