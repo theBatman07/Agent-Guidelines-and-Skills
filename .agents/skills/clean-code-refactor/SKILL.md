@@ -61,7 +61,13 @@ When identical (or near-identical) blocks appear in multiple places:
 - Parameterize the parts that differ
 - Don't extract on the first occurrence — wait for the pattern to repeat
 
-### 5. Replace Generic Exceptions
+### 5. Audit for Over-engineering (De-engineer)
+Scan the file for logic that can be replaced with simpler native/stdlib calls:
+- De-engineer complex wrappers into minimal functional calls.
+- If a custom implementation mirrors a standard library function, delete the custom code and use the standard library.
+- Strip out speculative features (YAGNI) that aren't actively used.
+
+### 6. Replace Generic Exceptions
 ```python
 # Before
 raise Exception("user not found")
@@ -73,13 +79,13 @@ class UserNotFoundError(DomainError):
 raise UserNotFoundError(user_id=user_id)
 ```
 
-### 6. Add Missing Types and Docstrings
+### 7. Add Missing Types and Docstrings
 After structural refactoring, ensure every function is:
 - Fully typed (params + return)
 - Documented with the standard docstring format
 
 ## Process
 1. Read the file top to bottom; note violations
-2. Apply changes in order: extract → flatten → name constants → deduplicate → type → document
+2. Apply changes in order: extract → flatten → name constants → deduplicate → de-engineer → type → document
 3. Run tests after each step to confirm behavior is preserved
 4. Don't change behavior — this is refactoring, not feature work

@@ -31,7 +31,10 @@ Walk through each changed file and verify:
 - Format: Description → Args → Returns → Raises
 - Sections are omitted when not applicable (no params = no Args, etc.)
 
-### DRY & KISS
+### DRY, KISS, & Over-engineering
+- Evaluate the diff against the Prioritization Ladder (YAGNI → Reuse → Stdlib → Native → Dependency)
+- Actively flag newly written logic that duplicates standard library utilities
+- Generate a "Delete-List" of bloat that can be stripped out before committing
 - No copy-pasted logic that should be a shared function
 - Implementation is the simplest correct approach
 - No premature abstraction (extract on 2nd or 3rd occurrence, not 1st)
